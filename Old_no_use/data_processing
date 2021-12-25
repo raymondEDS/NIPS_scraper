@@ -1,0 +1,44 @@
+#This module will merge all of the data into 1 comoprehensive source
+#right now some of this is in python other parts of it will be bash script
+
+#get all the paper urls
+
+#bash script
+#Ouput: multiple csv with all paper URL from each conference year
+#loop through all the conference years {2013 - 2017}
+    #python get_NIPS_conference get_paper_abstract_url(https://nips.cc/Conferences/{year})
+
+
+
+#to get all into 1 file
+def append_paper_abstract_url (file_path):
+    print('test')
+    #merge all csv in a file path into 1
+    #make sure to remove the header except for 1
+    # save header from 1 of the files
+    #delete headers for all others
+    #merge with header first
+
+#get the reviewer URL
+def append_review_url (append_paper_abstract_url):
+    #get each reviewer_url from the appened_paper_abstract_url
+    for each paper_abstract_url in append_paper_abstract_url
+        get_reviews_url(paper_abstract_url)
+        add to append_paper_abstract_url
+
+    
+
+#output file for review 
+#format: year, title, author, review1, review2, review3, review4
+def reviewer_comments_by_paper (append_paper_abstract_url):
+    print('test')
+    papers = count(append_paper_abstract_url)
+
+    for i in papers
+        #get the review comments from each index
+        get_review_text(append_paper_abstract_url[i])
+
+
+#to do
+#create an ouput file that has right format of file
+        

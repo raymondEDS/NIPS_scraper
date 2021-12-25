@@ -1,0 +1,39 @@
+#this module will get all the links for the various papers in the conference
+
+
+#first is just going to this website:
+#https://nips.cc/Conferences/2017 
+#we can change the date on the website since they didnt hash it
+
+
+#get all the URLs for each paper that is published at NIPS
+#we would run this function for each conference year
+def get_paper_abstract_url (conference_url):
+    print("test")
+    #num_paper = count number of <li></i></li> that appear
+    #for each i in num_paper 
+        #grab paper_hash = <a href="/paper/2018/hash/00ac8ed3b4327bdd4ebbebcb2ba10a00-Abstract.html">Synthesized Policies for Transfer and Adaptation across Tasks and Environments</a>
+        # url =  https://papers.nips.cc/ + paper_hash
+        #save the URLs
+
+
+#function to get the URL to the reviews page
+def get_reviews_url (paper_abstract_url):
+    print("test")
+    #input is abstract URL
+    #find reviews_url_hash = <a class="btn btn-light btn-spacer" href="/paper/2018/file/00ac8ed3b4327bdd4ebbebcb2ba10a00-Reviews.html">Reviews</a>
+    #combine https://papers.nips.cc/ + reviews_url_hash
+    #save website
+
+
+
+#function to grab review comments from URL
+def get_review_texts (reviews_url):
+    print('test')
+    #input would be reviews_url
+    #grab review text that follows: Reviewer 1, Review 2, Reviewer 3
+    #count number of reviewer
+        #for each reviewer:
+            #grab text after: white-space: pre-wrap;
+            #process text into proper formatt
+

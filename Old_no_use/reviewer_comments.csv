@@ -1,0 +1,409 @@
+Real Time Image Saliency for Black Box Classifiers,"Piotr Dabkowski, Yarin Gal",https://proceedings.neurips.cc/paper/2017/hash/0060ef47b12160b9198302ebdb144dcf-Abstract.html,"The paper proposes an approach to learn saliency masks. The proposed approach is based on a neural network and can process multiple images per second (i.e. it is fast).
+To me the paper is borderline, I would not object rejection or acceptance. I really believe in the concept of learning to explain a model and I think the paper has some good ideas. 
+
+There are no obvious mistakes but there are clear limitations. 
+-The saliency is only indirectly measured. Either through weakly supervised localisation or by the proposed saliency metric both these methods have clear limitations and I think these limitations should be discussed in the paper.
+
+The weakly supervised location is not perfect as a measure. If the context in which an object appears is essential to determine its class, the object localisation does not have to correlate with saliency quality. The results on weakly supervised localisation are interesting, but I think there is a big caveat when using them as a quality metric for saliency.
+
+The saliency metric is not perfect because of how it is applied. The estimated salient region is cropped. This crop is then rescaled to the original image size, with the original aspect ratio. This could introduce two artefacts. First, the change of the aspect ratio might impact how well it can be classified. Second in the proposed metric a small salient region is preferred. Since a small region is blown up heavily for re-classification the scale at which the object is now presented to the classifier might not be ideal. (Convnets are generally pretty translation invariant, but the scaling invariance must be learned, and there are  probably limits to this).
+
+What is not discussed here is how much the masking model depends on the architecture for learning the masks? Did the authors at one point experiment with different architectures and how this influenced the result?
+
+
+Minor comments
+Are the results in Table 1 obtained for all classes or only for the correct class?
+
+- Please specify with LRP variant and parameter setting was used for comparison. They have an epsilon, alpha-beta, and more variants with parameters.  
+
+*** Post rebuttal edit ***
+
+The fact that  how well the saliency metric works depends on the quality and the scale invariance of the classifier is strongly limiting the applicability of the proposed method. It can only be applied to networks having this invariance. 
+This has important consequences:
+-  The method cannot be used for models during the training phase, nor for models that do not exhibit this invariance. 
+- This limit the applicability to other domains (e.g. spectrogram analysis with CNN's).
+- The method is not generally applicable to black-box classifiers as claimed in the title.
+
+Furthermore, the response hints at a strong dependence on the masking network. 
+- As a result, it is not clear to me whether we are visualizing the saliency of the U-network or the masking network.
+
+If these effects are properly discussed in the paper I think it is balanced enough for publication. If not it should not be published","This paper introduces a NN to predict the regions of an image that are important for another NN for object categorization. The paper reads well and it is interesting that the experiments show that it works so well compared to previous works. The results are in challenging datasets with state-of-the-art NN. 
+
+I may suggest to motivate a bit better in which applications one may need real time efficiency. Also, I would have liked to see some insight from an analysis of the learnt salient regions (eg. which object categories exploit biases in the background to recognize the object) ","This paper image saliency mask generation approach that can process a hundred 224x224 images per second on a standard GPU. Their approach trains a masking model that finds the tightest rectangular crop that contains the entire salient region of a particular requested class by a black box classifier, such as Alexnet, GoogleNet, and ResNet. Their model architecture requires image feature map, such as those by ResNet-50, over different scales. The final scale feature will be passed through a feature filter that performs the initial localisation, while the following upsampling blocks fine-tune the produced masks. Experiment shows that their method outperforms other weakly supervised techniques at the ImageNet localisation task. 
+
+This paper appears to have sufficient references and related works. Do not completely check. 
+This paper appears to be technically correct. Do not completely check.
+This paper present a number of intuition and discussion on how they design their approach. 
+This paper's presentation is good.
+
+Overall, this paper presents interesting technical results that I am a little concerned about the real time speed claim and applications to real world images.
+
+Comments:
+
+- Does the processing time for 100 images per second include the image resizing operation? If so, what is the running time for other larger images, such as 640 X 480 images taken from iPhone 6s?
+
+- Salient objects in this paper is quite large, what if the requested class object is small in the images? Will 224x224 image be enough?
+
+- In Table 3, is there any corresponding metrics for other works in Table 2, such as Feed [2]?
+
+MISC
+- LN 273: ""More over, because our model"" -> ""Moreover, because our model""
+- LN 151: ""difference that [3] only optimise the mask"" -> ""difference that [3] only optimises the mask"""
+Joint distribution optimal transportation for domain adaptation,"Nicolas Courty, Rémi Flamary, Amaury Habrard, Alain Rakotomamonjy",https://proceedings.neurips.cc/paper/2017/hash/0070d23b06b1486a538c0eaa45dd167a-Abstract.html,"The manuscript introduces a new technique for unsupervised domain adaptation (DA) based on optimal transport (OT). Previous related techniques (that are state-of-the-art) use optimal transport to find a mapping between the marginal distributions of source and target.  
+The manuscript proposes to transports the joint distributions instead of the marginals. As the target does not have labels, the learned prediction function on the target is used as proxy. The consequence is an iterative algorithm that alternates between 1) estimating the transport for fixed data points and labeling, and 2) estimating the labeling function for fixed transport. As such, the algorithm can be seen as a self-learning inspired extension of previous work, which executed 1) and 2) only once. 
+In addition to the algorithm, the manuscript contains a high probability generalization bound, similar to the discrepancy-based bounds of Ben-David et al [24]. It is used as justification that minimizing the joint OT distance should result in better predictions. Formally, this is not valid, however, because the bound is not uniform in the labeling function, so it might not hold for the result of the minimization. 
+There are also experiments on three standard datasets that show that the proposed method achieve state-of-the-art performance (though the differences to the previous OT based methods are small). 
+
+strength:
+- the paper is well written, the idea makes sense
+- the method seems practical, as both repeated steps resemble previous OT-based DA work
+- the theory seems correct (but is not enough to truly justify the method, see below)
+- the experiments are done well, including proper model selection (which is rare in DA)
+- the experimental results are state-of-the-art
+
+weaknesses:
+- the manuscript is mainly a continuation of previous work on OT-based DA
+- while the derivations are different, the conceptual difference is previous work is limited 
+- theoretical results and derivations are w.r.t. the loss function used for learning (e.g. 
+  hinge loss), which is typically just a surrogate, while the real performance measure would 
+  be 0/1 loss. This also makes it hard to compare the bounds to previous work that used 0-1 loss 
+- the theorem assumes a form of probabilistic Lipschitzness, which is not explored well. 
+  Previous discrepancy-based DA theory does not need Prob.Lipschitzness and is more flexible 
+  in this respect.
+- the proved bound (Theorem 3.1) is not uniform w.r.t. the labeling function $f$. Therefore, 
+  it does not suffice as a justification for the proposed minimization procedure. 
+- the experimental results do not show much better results than previous OT-based DA methods
+- as the proposed method is essentially a repeated application of the previous work, I would have
+  hoped to see real-data experiments exploring this. Currently, performance after different number
+  of alternating steps is reported only in the supplemental material on synthetic data.
+- the supplemental material feels rushed in some places. E.g. in the proof of Theorem 3.1, the 
+  first inequality on page 4 seems incorrect (as the integral is w.r.t. a signed measure, not a 
+  prob.distr.). I believe the proof can be fixed, though, because the relation holds without
+  absolute values, and it's not necessary to introduce these in (3) anyway.  
+- In the same proof, Equations (7)/(8) seem identical to (9)/(10)
+
+
+questions to the authors:
+- please comment if the effect of multiple BCD on real data is similar to the synthetic case 
+
+***************************
+I read the author response and I am still in favor of accepting the work. ","This paper proposes a straightforward domain adaptation method using the optimal transport plan. Since the optimal transport is coupled with the prediction function of the target domain, it is not immediately clear how the optimal transport can help find a good prediction function for the target domain. Nonetheless, Section 3 presents a theoretical justification based on some assumptions. It looks like the justification is reasonable. 
+
+The paper provides comparison experiments on three datasets, but doest not have any ablation studies or analyses of the method. Some of the practical choices seem like arbitrary, such as the distance between data points and the loss between labels. What are the effects of different distance/loss metrics over the final results? Are there any good principles to choose between the different metrics? 
+
+Overall, the proposed method is simple and yet reads reasonable. The experiments lack some points but those are not critical. 
+
+In the rebuttal, it would be great to see some experimental answers to the above questions. ","Summary:
+
+- The authors propose theory and an algorithm for unsupervised domain adaptation. Unlike much work on this topic, they do not make the covariate shift assumption, but introduce the notion of Probabilistic Transfer Lipschitzness (PTL), an Lipschitz-assumption about the labelling function across domains. They give a bound on the transfer/generalization error in terms of the distance between source and target joint distributions as well as the error of the best PTL hypothesis. An experimental evaluation is performed on three real-world datasets, with the proposed method JDOT performing very well. 
+
+Clarity:
+
+- Overall, the paper is clear and easy to follow. 
+
+- What is the motivation/implications of choosing an additive/separable loss? It involves a trade-off between marginals yes, but how general is this formulation?
+
+- How much does the example in Figure 1 rely on the target function being an offset version of the source function? What would happen if the offset was in the y-direction instead?
+
+- In the abstract, the authors state that “Our work makes the following assumption: there exists a non-linear transformation between the joint feature/label space distributions of the two domain Ps and Pt.” Is this meant to describe the PTL assumption? In that case, I think the interpretation made in the abstract should be made in the text. 
+
+Theory: 
+
+- I would like the authors to comment on the tightness/looseness of the bound (Thm 3.1). For example, what happens in the limit of infinite samples? Am I right in understanding that the W1 term remains, unless the source and target distributions coincide? If they are different but have common support, and we have access to infinite samples, is the bound loose?
+
+- Could the authors comment on the relation between the covariate shift assumption and the proposed PTL assumption? 
+
+Experiments: 
+
+- There appears to be a typo in Table 1. Does Tloss refer to JDOT? Tloss is not introduced in the text. "
+Learning A Structured Optimal Bipartite Graph for Co-Clustering,"Feiping Nie, Xiaoqian Wang, Cheng Deng, Heng Huang",https://proceedings.neurips.cc/paper/2017/hash/00a03ec6533ca7f5c644d198d815329c-Abstract.html,"This paper achieves co-clustering by formulating the problem as optimization of a graph similarity matrix with k components.
+This paper is well motivated, the formulation of the proposed method is interesting, and its empirical performance is superior to other co-clustering methods.
+However, I have the following concerns about the clarity and the technical soundness of the paper.
+- Do Algorithm 1 and 2 always converge to a global solution? There is no theoretical guarantee of it, which is important to show the effectiveness of the proposed algorithms.
+- Section 4 is almost the same as Section 3.2, and the only difference is that the Laplacian matrix is normalized. This is confusing and the readability is not high. I recommend to integrate Section 4 into Section 3.2.
+- Moreover, the title of Section 4 is ""Speed Up the Model"", but how to speed up is not directly explained.
+- Algorithms 1 and 2 assume that lambda is large enough. But this assumption is not used in experiments. In addition, in experiments lambda is divided or multiplied by 2 until convergence, which is not explained in Algorithms 1 and 2, hence the explanation is not consistent and confusing.
+- Clustering accuracy is reported as 100% when noise = 0.6. However, in Figure 2, there are blues pixels in clusters and illustrated results do not look like 100% accuracy. More detailed explanation is helpful.
+- In Table 2, there is a large difference of the accuracy between the proposed method and BSGP, although the strategy is similar. What makes the difference? Discussing the reason would be interesting.
+","The authors propose a new method for co-clustering. The idea is to learn a bipartite graph with exactly k connected components. This way, the clusters can be directly inferred and no further preprocessing step (like executing k-means) is necessary. After introducing their approach the authors conduct experiments on a synthetic data set as well as on four benchmark data sets.
+
+I think that the proposed approach is interesting. However, there are some issues.
+
+First, it is not clear to me how the synthetic data was generated. Based on the first experiment I suppose it is too trivial anyway. Why did the authors not use k-means++ instead of standard k-means (which appears in 3/5 baselines)? Why did they not compare against standard spectral clustering? How did they initialize NMF? Randomly? Why not 100 random initializations like in the other methods? Why did they not use a second or third evaluation measure like the adjusted rand index or normalized mutual information? Since the authors introduce another parameter lambda (beside k) I would like to see the clustering performance in dependence of lambda to see how critical the choice of lambda really is. I see the argument why Algorithm 2 is faster than Algorithm 1, but I would like to see how they compare within the evaluation, because I doubt that they perform exactly the same. How much faster is Algorithm 2 compared to Algorithm 1?
+
+Second, the organization of the paper has to be improved. Figure 1 is referenced already on the first page but appears on the third page. The introduced baseline BSGP should be set as an algorithm on page two. Furthermore, the authors tend to use variables before introducing them, i.e., D_u, D_v and F in lines 61-63. Regarding the title: In what sense is the approach optimal? Isn't bipartite and structured the same in your case? 
+
+Third, the language of the paper should be improved. There are some weird sentence constructions, especially when embedded sentences are present. Furthermore, there are too many ""the"", singular/plural mistakes and a problem with tenses, i.e. Section 5.2 should be in present tense. In addition to grammar, the mathematical presentation should be improved. Equations are part of the sentences and hence, need punctation marks.
+
+Due to the inadequate evaluation and the quality of the write-up, I vote for rejecting the paper.
+
+More detailed comments:
+
+*** Organization:
+- title:   I do not get where the ""optimal"" comes from. Lines 33-34 say Bipartite=Structured, so why are both words within the title?
+- line 35: Figure 1 should be on the top of page two
+- lines 61-63 shoud appear as an algorithm
+- line 61: in order to understand the matrices D_u and D_v, the reader has to jump to line 79 and then search backwards for D, which is defined in line 74..
+- line 63: define D_u, D_v and F before using them..
+
+*** Technical:
+- line 35: B is used for a graph but also for the data matrix (lines 35 and 57)
+- line 38: B_{ij} should be small (see lines 53 and 60)
+- almost all equations: math is part of the text and therefore punctuation marks (.,) have to be used
+- equation (2) and line 70, set Ncut, cut and assoc with \operatorname{}
+- line 74: order: first introduce D, then d_{ii} and then L
+- line 74: if D is a diagonal matrix, then D_u and D_v are diagonal too. Say it!
+- equation (4): introduce I as the identity matrix
+- lines 82-85: this paragraph is problematic. What is a discrete value? Should the entries of U and V be integer? ( I think there a just a few orthogonal matrices which are integer ) How does someone obtain a discrete solution of by running k-means on U and V?
+- line 93: if P (and therefore S) should be non-negative (see Equation (9)), then you can already say it in line 93. Furthermore, isn't this an assumption you have to make? Until line 93, A and B could contain negative numbers but in the proposed approach, this is no longer possible, right?
+- line 113: a sentence does not start with a variable, in this case \sigma
+- line 132: get rid of (n=n_1+n_2) or add a where before
+- line 149: \min
+- line 150: Algorithms 1 and 2 are working on different graph laplacians. I understand that Alg.2 is faster than Alg.1 but shouldn't there be also a difference in performance? What are the results? It should be noted if Alg.1 performs exactly the same as Alg.2. However, another graph laplacian should make a difference.
+- line 160: Why does NMF need a similarity graph?
+- line 161: Did you tune the number of neighbors?
+- line 164: Why did you not use k-means++?
+- line 167: How does the performance of the proposed method vary with different values for the newly introduced parameter lambda?
+- line 171: How does the performance of the proposed method vary with different values for k. Only the ground-truth k was evaluated..
+- line 175: ""two-dimensional matrix"" Why not $n_1 \times n_2$?
+- Section 5.2: Please improve the description on how the synthetic data was generated.
+- line 182: if \delta is iid N(0,1) and you scale it with r greater than 0, then r*\delta is N(0,r^2)
+- line 183: according to the values of r, the noise was always less than the ""data""?
+- Figure 2: Improve layout and caption.
+- Table 1: After having 100 executions of all algorithms, what are the standard deviations or standard errors of the values within the table?
+- line 183: r is not the portion of noise
+- line 183: you did not do a evaluation of robustness!
+- line 194: setting r=0.9 does not yield a high portion of noise. Perhaps the description of the synthetic data needs improvement.
+- Table 2: NMF has to be randomly initialized as well, hence I am missing the average over 100 executions
+- Table 2: What is +-4.59? One standard deviation? Standard error? Something else?
+- line 219: You forgot to mention the obvious limitation of your approach: you assume the data to be non-negative!
+- line 220: \ell_2-norm vs. L2-norm (line 53)
+- line 224: Please elaborate the sentence ""This is because high-dimensional...""
+
+*** Language:
+- line 4:  graph-based
+- line 20: feature space
+- line 22: distribution (singular)
+- line 27: the duality [...] is
+- line 33: In graph-based
+- line 35: of such a bipartite graph
+- line 37: The affinity [...] is
+- line 38: propose, stay in present tense
+- line 39: conduct
+- line 40: ""in this method"" Which method is meant?
+- line 43: graph-based
+- lines 53-54: L2-norm vs. Frobenius norm, with or without -
+- line 58: ""view""
+- line 66: In the following, 
+- line 72: component (singular)
+- lines 76-77: ""denotes"" is wrong, better use ""Let Z=""
+- line 82: Note that
+- line 88: We can see from the previous section
+- lines 88-90: this is a strange sentence
+- line 93: we learn a matrix S that has
+- line 96: If S has exactly k connected
+- line 101: S, which have exactly k connected
+- lines 104-105: In the next subsection
+- line 132: to conduct an eigen-decomposition
+- line 134: to conduct an SVD
+- Algorithm 1: while not converged
+- line 141: ""will be hold""
+- line 148: to conduct an SVD
+- line 149: ""Algorithm 2 is much efficient than Algorithm 1""
+- Section 5.1: the section should be written in present tense (like Section 5.2) not in past tense
+- line 159: Non-negative Matrix Factorization (NMF)
+- line 204: data sets do not participate in experiments
+- line 229: graph-based
+- line 232: ""we guaranteed the learned grapg to have explicitly k connected components""
+- unnecessary use of ""the"" in lines 33, 68, 76, 77, 81, 82, 102, 104, 111, 114, 118, 119, 120, 122, 125, 129, 141, 143, 145
+
+"
+Learning to Inpaint for Image Compression,"Mohammad Haris Baig, Vladlen Koltun, Lorenzo Torresani",https://proceedings.neurips.cc/paper/2017/hash/013a006f03dbc5392effeb8f18fda755-Abstract.html,"This paper proposes a progressive image compression method that's ""hybrid"". The authors use the framework of Toderici et al (2016) to setup a basic progressive encoder, and then they improve on it by studying how to better propagate information between iterations. The solution involves using ""temporal"" residual connections, without the explicit need to have an RNN per se (though this point is a bit debatable because in theory if the residual connections are transformed by some convolution, are they acting as an additive RNN or not?). However, the authors also employ a predictor (inpainter). this allows them to encode each patch after trying to predict an ""inpainted"" version first. It is important to note here that this will only work (in practice) if all the patches on which this patch depends on have been decoded. This introduces a linear dependency on patches, which may make the method too slow in practice, and it would be nice to see a bit more in the text about this issue (maybe some timing in formation vs. not using inpainting). 
+
+Overall, I think the paper was well written and an expert should be able to reproduce the work.
+
+Given that the field of neural image compression is still in its infancy and that most of the recent papers have been focusing on non-progressive methods, and this paper proposes a *progressive* encoder/decoder, I think we should seriously consider accepting it.","Paper modifies a version of auto encoder that can progressively compress images, by reconstructing the full image rather then residual at every state. This improves performance in low loss regime. In addition they learn an in paining network that learns to predict an image patches sequentially from previous patches that are located to the left and above of them. This results in the improved performance overall. Advantages: Interesting experiments and observations and improvement over previous residual encoder. Drawbacks: Why is the network applied in patches rather then over the whole image since it is convolutional network? The inpainting predictions are unimodal - whereas the distribution of the next patch is highly multimodal - this produces limitations and can be significantly improved. The resulting performance therefore is not state of the art (compared to standard non-progressive method like jpeg 2000).
+
+Other comments:
+- Have you tried feeding the image into encoder at every stage?
+","The authors take a model from the paper Toderici et al. [18] for the task of image compression and add their ideas to improve the compression rate. The proposal that the authors make to this model are:
+1. To provide an identity shorcut from the previous stage to the output of the current stage
+2. Add projection shortcuts to Encoder and/or Decoder from their previous stage
+3. Inpainting model (with multi-scale convolution layers) at the end of each stage. 
+
+The authors provide many different experiments (with/without inpainting network) and observe that their model with projection shortcuts only for the Decoder and jointly trained with an inpainting network provides for the best performance. Particularly, the inpainting network(by using multi-scale convolutions), as the authors claim, helps in improving the performance significantly at lower bit-rates.
+
+The paper shows many results to claim that the Decoder with parametric connections perform better than their other models. The reviewer finds it unclear with their argument that adding connections to Encoders would burden it on each stage. Perhaps an additional experiment / more explanation might give insights on how and why the Encoder with connections make the residuals harder to compress. 
+
+Typos: Line 231 - ""better then"" -> ""better than""
+
+It is an interesting paper with several experiments to validate their ideas."
+Inverse Filtering for Hidden Markov Models,"Robert Mattila, Cristian Rojas, Vikram Krishnamurthy, Bo Wahlberg",https://proceedings.neurips.cc/paper/2017/hash/01894d6f048493d2cacde3c579c315a3-Abstract.html,"The paper addresses recovery of the observation sequence given known posterior state estimates, but unknown observations and/or sensor model and also in an extension, noise-corrupted measurements.  There is a nice progression of the problem through IP, LP, and MILP followed by a more careful analytical derivation of the answers in the noise-free case, and a seemingly approximate though empirically effective approach (cf. Fig 2) using spherical K-means as a subroutine in the noisy case.
+
+Honestly, most of the motivations seem to be unrealistic, especially the cyber-physical security setting where one does not observe posteriors, but simply an action based on a presumed argmax w.r.t. posteriors.  The EEG application (while somewhat narrow) seems to be the best motivation, however, the sole example is to compare resconstructed observations to a redundant method of sensing -- is this really a compelling application?  Is it actually used in practice?  
+
+Some additional details are provided on page 8, but this is not enough for me to fully understand the rationale for the approach.  One is given posterior state estimates of sleep stage for a new patient and the goal is to provide the corresponding mean EEG frequency observations?  I don't see the point.
+
+Minor terminological question: I've always viewed the HMM to be a type of sequential graphical model structure allowing any type of random variable (discrete or continuous) of which discrete HMMs and Kalman filters (continuous Gaussian) are special cases.  Does the terminology ""HMM"" really assume discrete random variables?
+
+Overall, though the motivation for the work is not very strong for me, the results in this paper address a novel problem, and make technically innovative and honestly surprising insights in terms of the tractability and uniqueness of the recovery problems addressed in the paper.  I see this paper as a very technically interesting solution that may find future application in use cases the authors have not considered.
+","The paper describes the solutions to three separate (related) inverse problems for the HMM, and then applies this to polysonmography data for automatic sleep staging. In general, the paper is well written. The method appears to be novel, although I don't have extensive knowledge of this area. The weakest part of the paper is the experimental section: a single set of experiments is performed (with testing on a separate subject), whilst varying the noise. This does show that the method works for this particular application, but doesn't show how generally applicable the method is. Also, I'm not sure why the posteriors would be corrupted by noise? What's the use case?
+
+Specific comments
+- L16 transitions according to the row-stochastic: missing ""are sampled""?
+- last line in eq 4 - column vector times column vector equals column vector?? B1 = 1?","This is a well written paper considering an inverse filtering problem in HMMs. The material is easy to follow and makes sense, as well as the experimental section. As far as I know this problem has not been previously addressed.
+
+My main criticism is that the experimental section is there mainly to show that the algorithms performs as promised, as opposed to backing up the original motivation for considering the inverse filtering problem in the first place. I see that the inverse filtering problem in HMMs might be useful, but the experimental results provided do not reinforce it in any way. For example, are there any examples that the HMM sensing mechanism fails? Could those example be simulated in some reasonable way and then the proposed algorithm actually used to perform the fault detection?
+
+Anyhow, I still consider this paper as a valuable material for NIPS.
+
+Other comments:
+Eq. (22) in the supp. material - I’m not sure I’m following the reasoning here. Is there some kind of inequality that is used to show that the sum of two matrices is no less than …?
+I understand that there are no statistical assumptions on the noise? (e.g. iid?) Could some of those assumptions lead to theoretical results from the clustering algorithm perhaps?
+"
+On clustering network-valued data,"Soumendu Sundar Mukherjee, Purnamrita Sarkar, Lizhen Lin",https://proceedings.neurips.cc/paper/2017/hash/018dd1e07a2de4a08e6612341bf2323e-Abstract.html,"The paper is interesting, and it has merit, but its limited level of novelty and achieved gain are hardly supporting acceptance.
+For what I checked, the proposed methods are correct, but the authors spend too much providing mathematical details rather than performing a more convincing comparison with other methods, which, at the moment, is showing only a fair improvement over similar algorithms.Furthermore, the paper is describing a clever combination of well known techniques, rather than introducing some novel ideas, and, overall, the role played by machine learning throughout the process is quite marginal.  
+
+Finally, a few misprints occur in the main text, and the references are not homogeneously reported; in fact, some entries have all the authors with full name, others have initials, others have ""et al."" misplaced (see [3])
+
+===============
+
+The provided rebuttal addresses all the concern: overall rating modified accordingly.","Review Summary: This paper accomplishes a lot in just a few pages. This paper is generally well-written, but the first three sections in particular are very strong. The paper does a great job of balancing discussing previous work, offering theoretical results for their approach, and presenting experimental results on both generated and real data. The paper would benefit from just a touch of restructuring to add a conclusion and future work section as well as more details to some of their experimental methods and results. 
+
+Summary of paper: This paper presents two versions of their framework for clustering networks: NCGE and NCLM. Each version tackles a slightly different variation of the problem of clustering networks. NCGE is applied when there is node correspondence between the networks being clustered, while NCLM is applied when there isn’t. It is impressive that this paper tackles not one but both of these situations, presenting strong experimental results and connecting their work to the theory of networks. 
+
+This paper is superbly written in some sections, which makes the weaker sections almost jarring. For example, sections 2 and 3 do an excellent job of demonstrating how the current work builds on previous work. But then in sharp contrast lines 197-200 rely heavily the reader knowing the cited outside sources to grasp their point. Understandably (due to page lengths) one can not include detailed explanations for everything, but the authors may want to consider pruning in some places to allow themselves more consistency in their explanations. 
+
+The last subsection (page 8, lines 299-315) is the most interesting and strongest part of that final section. It would be excellent if this part could be expanded and include more details about these real networks. Also the paper ends abruptly without a conclusion or discussion of potential future work. Perhaps with a bit of restructuring, both could be included. 
+
+Section 3.2 was another strong moment of the paper, peppering both interesting results (lines 140-142) and forecasting future parts of the paper (lines 149-150). However, this section might be one to either condense or prune just a bit to gain back a few lines as to add details in other sections. 
+
+
+
+
+A few formatting issues, questions, and/or recommendations are below:
+
+Page 1, lines 23,24,26, 35: Citations are out of order. 
+
+Page 2, line 74: The presentation of the USVT acronym is inconsistent with the presentation of the NCGE and NCLM acronyms. 
+
+Page 3, line 97: Citations are out of order. 
+
+Page 4, line 128: Based on the earlier lines, it seems that g(A) = \hat{P} should be g(A_i) = \hat{P_i} 
+
+Lines 159-160: In what sense does the parameter J count the effective number of eigenvalues? 
+
+Page 5, lines 180-183: It appears that $dn$ is a number, but then in line 182, it seems that $dn()$ is a matrix function. Which is it?
+
+Lines 180-183: The use of three different D’s in this area make it a challenge to sort through what all the D’s mean. Perhaps consider using different letters here. 
+
+Line 196: Citations are out of order. 
+
+Page 6, line 247: How is clustering accuracy measured? 
+
+Page 7, line 259: There appears to be an extra space (or two) before the citation [26] 
+
+Lines 266-277: There appears to be a bit of inconsistency in the use of K. For example, in line 266, K is a similarity matrix and in line 268, K is the number of clusters. 
+
+Lines 269-270, table 2, and line 284: What are GK3, GK4, and GK5? How are they different?
+
+Line 285: There is a space after eigenvectors before the comma. 
+","Authors present a novel approach for clustering networks valued data with and without node correspondence.  The approach is seemed to have the theoretical support for it’s consistency and tested through real and simulated data analyses.  Overall, the paper is well written and I have some concerns on aspects outlined below.
+
+1.Line 266: In learning t, how do you decide on the range to maximize the relative eigen-gap? I assume this is application specific?
+
+2.Line 261: Thera are various networks based statistics and calculations also have various parameterizations. For example,  how do you compute the clustering coefficient? You have a reference but there are various ways to define clustering coefficient using different measures and a brief discussion on this would enhance the paper. 
+
+3.Line 270: It’s not clear what is meant by “boosted it’s performance”. Do you mean computing time, or misclassification or convergence?
+
+4.Line 280-281: This observation is counter intuitive relative the way you have defined similarity matrix and eigengap. It would be more interesting to see examine the behavior when the networks are heavily sparse.
+
+5.There should be a section on discussion highlighting main results/contributions and also limitations of the approach. This is missing in the current version.
+"
+Langevin Dynamics with Continuous Tempering for Training Deep Neural Networks,"Nanyang Ye, Zhanxing Zhu, Rafal Mantiuk",https://proceedings.neurips.cc/paper/2017/hash/019d385eb67632a7e958e23f24bd07d7-Abstract.html,"The paper proposes a method for improving stochastic gradient HMC. They add an extra term gaussian noise term to the momentum update controlled by a new parameter alpha. And they do metadynamics to more efficiently explore the landscape of this extra parameter. They fine-tune the solution at the end with a noise free momentum SGD. They show experimental results on stacked denoising autoencoders on MNIST and sequence modeling on wikipedia hutter prize. They show that their method outperforms state of the art methods on both datasets.
+
+evaluation : I think the paper is generally well written and the contribution is valuable as far as I can tell without being an absolute expert in this field. I have some doubts about the experiments which I detail below. I also have some doubts about the flat-sharp minimum argument and the relationship with the density lines 129-133.
+
+questions: 
+- you rely on a two step process of bayesian optimization followed by momentum SGD. How important is the fine tuning ? How long does it have to run for ? 
+- what is Ls in the experiments? Were both phases run in figure 2 or is the sgdm only run at the end ?
+- Why is SGD-M is missing form the figure 3 ? I came to think that well tuned momentum SGD matches performance in most state-of-the-art optimizers, judging by the tables in E1 and E2 the tuning involved is relatively basic. What are the results with 10 learning rates sampled on a log scale between 1e-4 and 1e-2 and a similar grid in momentum ? Are the best methods the same ? Can the proposed method beat that given the same computational budget ?
+- I think the problems may be too weak for the method to show its strength. I think imagenet or any of the experiments in [19] could make the case more convincing.","The paper proposes a new method to optimize deep neural networks, starting with a stochastic search using 'original' Langevin (where the temperature appears as a function of an auxiliary variable), then transitioning to more classical, deterministic algorithm.
+
+I enjoyed reading the paper - I am not an expert in the field but as far as I could tell the methods are novel, and the idea of treating the temperature as a function of an augmented variable seems elegant; since one can then change the landscape for temperature (tweaking g(\alpha) and \phi(\alpha)) without changing the optimum of the function. The numerical experiments seem to indicate that the method is not more computationally demand but improves optimization. I recommend acceptance, with minor caveats below.
+
+- The numerical experiments show that the algorithm obtain better loss than a number of classical neural network optimization methods. However they don't explicitly investigate the ability of the algorithm to jump between modes, a property frequently mentioned in the body of the text. Having an experiment on a toy, lower dimensional function, where that property could be clearly highlighted would have improved the paper. Generally speaking, visual representation of the behavior of the algorithm in a couple of canonical situation would have provided more intuition on the inner workings of the algorithm. The choice of networks (stacked DAE) and dataset (language modeling) seem also arbitrary.
+- Notation feels a bit clumsy. It is unfortunate to introduce an inverse temperature \beta, make it be equal to the output of a function g, and have it appear frequently as its inverse (i.e. the temperature). Why not introduce T(\alpha), \beta=1/T(\alpha) (just like Shannon's entropy does not require a k_B term, k_B does not need to appear here), and use either notation depending on which fits the equation most naturally (T for equations 4,9,10, beta for 6,7). It might also be arguably clearer to plot T(\alpha) in figure 1 (since the text talks about 'high temperature configuration' but the figure is showing low inverse-temperatures).
+- The paper suggests tweaking the value of \phi(\alpha) to obtain a desired distribution on \alpha. But is it not hard to understand what the marginal distribution of \alpha is, given the multiplicative term H(\theta,r) g(\alpha)? 
+- Nitpicky: The force well from equation (11), as it is written, does not appear to have non-zero gradients. Does it not need to be smoothened to obtain the behavior described in the following lines?
+- In section 4.2, lines 206-211 are not particularly clear. Furthermore, wouldn't adding those gaussian kernel to the hamiltonian effectively act as 'walls' preventing alpha from mixing (transitioning from one side of the wall to the other seems to require going through a high energy configuration)?
+- Figure 2, \tilde beta is missing a backslash.
+","Disclaimer: I have never run Santa from [1] in practice, and might therefore have missed some key subtleties.
+
+The paper takes stochastic gradient Langevin dynamics, with Hamiltonian H(\theta, r),
+and basically makes the annealing schedule adaptive by introducing another parameter \alpha to the Hamiltonian H. \alpha adapts H with g(\alpha) * H and gets its own momentum variable. Via g(\alpha), the original Hamiltonian H can be suppressed, allowing the annealing schedule to be changed in the formulation. This set-up -- CTLD or continuously tempered Langevin dynamics -- is used in an algorithm to get parameters in a ""flat minimum"" area, after which standard SGD does some refinement.
+
+The results show that CTLD finds better solutions than Santa and methods that don't adaptively change the annealing schedule. CTLD adapts the temperature dynamics.
+
+A few pointers on the results:
+
+** The paper added a prior or regularizer in line 72, which is (might be) required to let the posterior be normalizable and the dynamics simulate from the stationary distribution of the joint. However, in the results, the prior or a regularizer seems omitted?
+
+** Why is drop-our required if there is already a large amount of extra 'exploration' noise introduced by CTLD? Is it fair to isolate a conclusion in the presence of this extra source of noise?
+
+For Hamiltonian MCMC for neural nets, why not go ""all the way"" as you already have samples (approximately) from the marginal p(\theta | data)? This is very much in the spirit of the original samplers for neural nets, e.g. [Neal, R. M. (1994) Bayesian Learning for Neural Networks, Ph.D. Thesis].
+"
+Beyond Worst-case: A Probabilistic Analysis of Affine Policies in Dynamic Optimization,"Omar El Housni, Vineet Goyal",https://proceedings.neurips.cc/paper/2017/hash/01a0683665f38d8e5e567b3b15ca98bf-Abstract.html,"This paper studies the contrast between the worst-case and the empirical performance of affine policies.  The authors show the affine policies produce a good approximation for the two-stage adjustable robust optimization problem with high probability on random instances where the constraint coefficients are generated i.i.d. from a large class of distribution.  The empirical results affine policy is very close to optimal and also several magnitudes faster.
+
+In Page 3, the paper mentions MIP, but doesn’t define it.  I think MIP is mixed integer program, which is mentioned in page 8. The paper misses its reference page (it is in the paper’s supplementary file).
+","The authors present an interesting analysis of a particular robust optimization problem: two stage adjustable robust linear optimization with an affine policy. Specifically, the authors explore the discrepancy between poor theoratical performance (according to worst-case theoretical bounds) and near-optimal observed empirical performance. Instead of looking at the worst case scenarios, the authors derive bounds on performance when the contraint matrix is generated from a particular class of probability dstitribution. They derive bounds for several families and iii/non iid generation scenarios. 
+
+I am not particular familiar with this problem but the paper is written well, and the material is presented in a clear and accessible fashion.
+My only comment would be to add an example of a specific application ( and motivation) of the two-stage adjustable robust linear optimization. Readers who are not familiar with the subject matter will have greater appreciation for the presented results. ","Review 2 after authors' comments:
+
+I believe the authors gave a very good rebuttal to the comments made which leads me to believe that there is no problem in accepting this paper, see updated rating.
+
+------------
+
+This paper addresses the challenging question of giving bounds for affine policies for adjustable robust optimization models. I like the fact that the authors (in some probabilistic sense) reduced the large gap of sqrt(m) to 2 for some specific instances. The authors have combined various different techniques combining probabilistic bounds to the structure of a set, which is itself derived using a dual-formulation from the original problem. However, I believe the contributions given in this paper and the impact is not high enough to allow for acceptance for NIPS. I came to this conclusion due to the following reasons:
+
+- Bounds on the performance of affine policies have been described in a series of earlier papers. This paper does not significantly close the gap in my opinion.
+
+- The results strongly depend on the generative model for the instances. However, adjustable robust optimization is solely used in environments that have highly structured models, such as the ones mentioned in the paper on page 2, line 51: set cover, facility location and network design problems. It is also explained that the performance differs if the generative model, or the i.i.d. assumption is slightly changed. Therefore, I am not convinced about the insights these results give for researchers that are thinking of applying adjustable robust optimization to solve their (structured) problem.
+
+- Empirical results are much better than the bounds presented here. In particular, it appears that affine policies are near optimal. This was known and has been shown in various other papers before.
+
+- On page 2, lines 48-49 the authors say that ""...without loss of generality that c=e and d=\bar{d}e (by appropriately scaling A and B)."" However, I believe you also have to scale the right-hand side h (or the size/shape of the uncertainty set). And the columns of B have to be scaled, making the entries no longer I.I.D. in the distribution required in Section 2?
+
+- Also on page 2, line 69 the authors describe the model with affine policies. The variables P and q are still in an inner minimization model. I think they should be together with the minimization over x?
+
+- On page 6, Theorem 2.6. The inequality z_AR <= z_AFF does always hold I believe? So not only with probability 1-1/m?
+
+- There are a posteriori methods to describe the optimality gap of affine policies that are much tighter for many applications, such as the methods described by [Hadjiyiannis, Michael J., Paul J. Goulart, and Daniel Kuhn. ""A scenario approach for estimating the suboptimality of linear decision rules in two-stage robust optimization."" Decision and Control and European Control Conference (CDC-ECC), 2011 50th IEEE Conference on. IEEE, 2011.] and [Kuhn, Daniel, Wolfram Wiesemann, and Angelos Georghiou. ""Primal and dual linear decision rules in stochastic and robust optimization."" Mathematical Programming 130.1 (2011): 177-209.].
+
+-------
+
+I was positively surprised by the digitized formulation on page 8. Is this approach used before in the literature, and if so where? The authors describe that the size can depend on desired accuracy. With the given accuracy, is the resulting solution a lower bound or an upper bound? If it is an upper bound, is the solution feasible? Of course, because it is a MIP it can probably only solve small problems as also illustrated by the authors.
+
+-------
+
+I have some minor comments concerning the very few types found on page 5 (this might not even be worth mentioning here):
+- line 166. ""peliminary""
+- line 184. ""affinly independant""
+- line 186. ""The proof proceeds along similar lines as in 2.4."" (<-- what does 2.4 refer to?)
+
+"
+Few-Shot Learning Through an Information Retrieval  Lens,"Eleni Triantafillou, Richard Zemel, Raquel Urtasun",https://proceedings.neurips.cc/paper/2017/hash/01e9565cecc4e989123f9620c1d09c09-Abstract.html,"This work is a great extension of few shot learning paradigms in deep metric learning. Rather than considering pairs of samples for metric learning (siamese networks), or 3 examples (anchor, positive, and negative -- triplet learning), the authors propose to use the full minibatchs' relationships or ranking with respect to the anchor sample. This makes sense from the structured prediction, and efficient learning. Incorporating mean average precision into the loss directly, allows for optimization of the actual task at hand.
+Some comments:
+1. t would be great to see more experimental results, on other datasets (face recognition). 
+2. Figure 1 is not very powerful, it would be better to show how the distances change as training evolves.
+3. Not clear how to set \lambda, as in a number of cases, a wrong value for \lambda leads to weak results.
+4. Authors must provide code for this approach to really have an impact in deep metric learning, as this work requires a bit of implementation.","This paper suggests a novel training procedure for few-shot learning based on the idea of maximising information retrieval from a single batch. Retrieval is maximised by a rank-ordering objective by which one similarity ranking per sample in the batch is produced and optimised. The method and the results are clearly stated, as are the mathematical background and guarantees. On a standard Omniglot few-shot learning task the method reaches state-of-the-art results. What I am wondering about is the computational complexity of this ansatz in comparison to a Siamese or Matching Network approach. Can you report the timings for optimisation?","This paper proposes an interesting strategy for the important problem of few shot learning, comparing on relevant open benchmarks, and achieving impressive performance.  However, the claims of the few shot learning being state of the art seem somewhat overstated. No reference is given to recent work that has demonstrated comparable or better results than this paper does. 
+
+Relevant Papers Include:
+Kaiser et al., ICLR’17
+Munkhdalai and Yu, ICML’17
+Shyam et al., ICML’17
+
+Overall, the approach is relatively simple from a neural network architecture perspective in comparison to these other techniques, which makes this performance of this paper impressive. 
+"
