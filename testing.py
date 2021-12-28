@@ -32,7 +32,9 @@ def reviewer_comments_pre2016(webpage):
 y = 'https://papers.nips.cc/paper/2015/file/020c8bfac8de160d4c5543b96d1fdede-Reviews.html'
 web_page_reviews = access_url(y)
 
-print(web_page_reviews.find_all('div',{"class":"response"}))
+print(web_page_reviews.prettify())
+
+#print(web_page_reviews.find_all('div',{"class":"response"}))
 
 #reviews_out = reviewer_comments_pre2016(web_page_reviews)
 #print(reviews_out)
