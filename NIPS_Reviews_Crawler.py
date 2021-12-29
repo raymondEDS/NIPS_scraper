@@ -80,14 +80,15 @@ def reviewer_comments_post2016(webpage):
 def reviewer_comments_pre2016(webpage):
     #returns reviewer number and comment in a list, this is for reviews before 2016
     paper_reviews = []
+    dictionary = {}
     i = 0
     for i in range(len(webpage.find_all('div',{"class":"response"}))):
         comments = webpage.find_all('div',{"class":"response"})
         
         #must have the reviewer + i + 1 or else reviewer_comments_csv() will break
-        paper_reviews.append(['reviewer '+ str(i+1),comments[i].text]) # replace with paper_reviews.append({'reviewer '+ str(i+1):comments[i].text})
-        #paper_reviews.append({'reviewer '+ str(i+1):comments[i].text})
+        dictionary.update({'reviewer '+ str(i+1):comments[i].text})
         i += 1
+    paper_reviews = [dictionary]
     return(paper_reviews)
 
 def reviewer_comments_2016(webpage):

@@ -17,17 +17,7 @@ collection.pop(0)
 #create_nips_abstract_link_csv(collection,nips_year,website_url)
 
 
-def reviewer_comments_pre2016(webpage):
-    #returns reviewer number and comment in a list
-    paper_reviews = []
-    i = 0
-    for i in range(len(webpage.find_all('div',{"class":"response"}))):
-        comments = webpage.find_all('div',{"class":"response"})
-        
-        #must have the reviewer + i + 1 or else reviewer_comments_csv() will break
-        paper_reviews.append(['reviewer '+ str(i+1),comments[i].text])
-        i += 1
-    return(paper_reviews)
+
 
 y = 'https://papers.nips.cc/paper/2015/file/020c8bfac8de160d4c5543b96d1fdede-Reviews.html'
 web_page_reviews = access_url(y)
