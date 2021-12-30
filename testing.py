@@ -1,29 +1,24 @@
 from NIPS_Reviews_Crawler import *
 
-
-website_url = "https://proceedings.neurips.cc"
-nips_year = '2015'
-starting_url = "https://proceedings.neurips.cc/paper/" + nips_year
-file_name = "nips_paper_links_" + nips_year +'.csv'
-reviewer_comments_output = "nips_paper_reviews_" + nips_year +'.csv'
-# Access and test the starting URL
-web_page = access_url(starting_url)
-
-collection = web_page.find_all('li')
-
-# Delete the first two `li` element as they are not the paper items we need
-collection.pop(0)
-collection.pop(0)
-#create_nips_abstract_link_csv(collection,nips_year,website_url)
-
-
-
-
-y = 'https://papers.nips.cc/paper/2015/file/020c8bfac8de160d4c5543b96d1fdede-Reviews.html'
+y = 'https://proceedings.neurips.cc/paper/2016/file/5d616dd38211ebb5d6ec52986674b6e4-Reviews.html'
 web_page_reviews = access_url(y)
 
-print(web_page_reviews.prettify())
-
+#print(web_page_reviews.find('h3').find_next_sibling())
+dictionary = {}
+for x in web_page_reviews.find_all('p'):
+    print('parent----------------------------------------------------------------------------------------------------')
+    print(x.parent)    
+    print('h3----------------------------------------------------------------------------------------------------')
+    print(x.find_previous_sibling('h3').text)
+    print('h4----------------------------------------------------------------------------------------------------')
+    print(x.find_previous_sibling('h4').text)
+    print('text----------------------------------------------------------------------------------------------------')
+    print(x.text)
+    column_name = x.find_previous_sibling('h3').text + ' '+x.find_previous_sibling('h4').text
+    print(column_name)
+    dictionary.update({column_name:x.text})
+output = [dictionary]
+print(output[0])
 #print(web_page_reviews.find_all('div',{"class":"response"}))
 
 #reviews_out = reviewer_comments_pre2016(web_page_reviews)

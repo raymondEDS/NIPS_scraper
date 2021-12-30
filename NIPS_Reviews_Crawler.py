@@ -4,6 +4,7 @@ import os
 import sys
 import shutil
 import csv
+import math
 import re
 from datetime import datetime
 import requests
@@ -18,7 +19,7 @@ startTimeScript = datetime.now()
 # Set up the verbose and debug flags to print detailed messages for debugging (setting True will activate!)
 verbose = True
 debug = False
-not_testing = False
+testing = True
 
 def access_url(url):
     #credit goes to https://github.com/daines-analytics/web-scraping-projects/tree/master/py_webscraping_neurips_proceedings_2020
@@ -28,7 +29,7 @@ def access_url(url):
     # Adding random wait time so we do not hammer the website needlessly
     waitTime = randint(1,3)
     print("Waiting " + str(waitTime) + " seconds to retrieve the next URL.")
-    if not_testing : 
+    if testing == False : 
         sleep(waitTime)
     try:
         s = requests.Session()
@@ -93,8 +94,13 @@ def reviewer_comments_pre2016(webpage):
 
 def reviewer_comments_2016(webpage):
     #returns reviewer number and comment in a list for 2016
-    #todo
-    return(True)
+    paper_reviews = []
+    dictionary = {}
+    for x in webpage.find_all('p'):
+        column_name = x.find_previous_sibling('h3').text + ' '+x.find_previous_sibling('h4').text
+        dictionary.update({column_name:x.text})
+    paper_reviews = [dictionary]
+    return(paper_reviews)
 
 def create_nips_abstract_link_csv(bsoup_processed_file,nips_year,website_url):
     #creates CSV of author,paper title, abstract link
@@ -120,19 +126,38 @@ def create_nips_abstract_link_csv(bsoup_processed_file,nips_year,website_url):
         file.close()
 
 
-def reviewer_comments_csv(links_csv,output_csv):
+def reviewer_comments_csv(links_csv,output_csv,year):
     #creates final csv with reviews
     #to do make sure i have the nips year set up
     nips_papers = csv.reader(open(links_csv))
     df = pd.DataFrame()
-
     for paper_link in nips_papers:
         #gets reviews for each paper in file
-        reviews_out = reviewer_comments_post2016(access_url(reviews_url(paper_link[2])))
-        dictionary = {'Title':paper_link[0],'Author':paper_link[1],'Link':paper_link[2]}
-        dictionary.update(reviews_out[0])
-        df2 = pd.DataFrame([dictionary])
-        df = df.append(df2)
+        #reviewer comments are slightly different based on 
+        try:
+            if int(year) == 2016:
+                reviews_out = reviewer_comments_2016(access_url(reviews_url(paper_link[2])))
+            elif int(year) > 2016:
+                reviews_out = reviewer_comments_post2016(access_url(reviews_url(paper_link[2])))
+            elif int(year) < 2016:
+                reviews_out = reviewer_comments_pre2016(access_url(reviews_url(paper_link[2])))
+            dictionary = {'Title':paper_link[0],'Author':paper_link[1],'Link':paper_link[2]}
+            dictionary.update(reviews_out[0])
+            df2 = pd.DataFrame([dictionary])
+            df = df.append(df2)
+        except AttributeError:
+            continue
+    if int(year) < 2016:
+    #processing dataframe so reviewer Q1 and Q2 are labeled correctly
+    #we only want to process this if pre 2016
+        x = len(df.keys())
+        for i in range(3,x):
+            if i == x-1:
+                df.rename(columns={df.keys()[i]:'Author Rebutal'},inplace=True)
+            elif i%2 == 0:
+                df.rename(columns={df.keys()[i]:"Reviewer " + str(math.floor((i-1)/2))+':Q2'},inplace=True)
+            else:
+                df.rename(columns={df.keys()[i]:"Reviewer " + str(math.floor(i/2))+':Q1'},inplace=True)
     df.to_csv(output_csv,index = False)
 
 
@@ -140,7 +165,7 @@ def run_script():
     #run script when ready
     #Specifying the URL of desired web page to be scrapped
     website_url = "https://proceedings.neurips.cc"
-    nips_year = '2017'
+    nips_year = '2016'
     starting_url = "https://proceedings.neurips.cc/paper/" + nips_year
     file_name = "nips_paper_links_" + nips_year +'.csv'
     output = "nips_paper_reviews_" + nips_year +'.csv'
@@ -156,7 +181,6 @@ def run_script():
     collection.pop(0)
 
     create_nips_abstract_link_csv(collection,nips_year,website_url)
-    reviewer_comments_csv(file_name,output)
+    reviewer_comments_csv(file_name,output,nips_year)
 
-
-#run_script()
+if testing == False: run_script()
