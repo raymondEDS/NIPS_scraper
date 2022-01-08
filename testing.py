@@ -9,12 +9,12 @@ for x in web_page_reviews.find_all('p'):
     print('parent----------------------------------------------------------------------------------------------------')
     print(x.parent)    
     print('h3----------------------------------------------------------------------------------------------------')
-    print(x.find_previous_sibling('h3').text)
+    #print(x.find_previous_sibling('h3').text)
     print('h4----------------------------------------------------------------------------------------------------')
-    print(x.find_previous_sibling('h4').text)
+    #print(x.find_previous_sibling('h4').text)
     print('text----------------------------------------------------------------------------------------------------')
     print(x.text)
-    column_name = x.find_previous_sibling('h3').text + ' '+x.find_previous_sibling('h4').text
+    column_name = ' '
     print(column_name)
     dictionary.update({column_name:x.text})
 output = [dictionary]
